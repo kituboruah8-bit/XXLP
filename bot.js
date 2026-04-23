@@ -5,6 +5,7 @@ import { loadCommands, loadEvents } from './src/utils/loaders.js';
 import { ensureDirectoryExists } from './src/utils/fileHandler.js';
 import fs from 'fs';
 import path from 'path';
+import { pathToFileURL } from 'url';
 
 // Ensure required directories exist
 ensureDirectoryExists(config.uploadDir);
@@ -36,8 +37,9 @@ async function registerCommands() {
 
     const commands = [];
     for (const file of commandFiles) {
-      const filePath = path.join(commandsPath, file);
-      const command = await import(`file://${filePath}`);
+      const filePath = path.resolve(commandsPath, file);
+      const fileUrl = pathToFileURL(filePath).href;
+      const command = await import(fileUrl);
       if (command.default && command.default.data) {
         commands.push(command.default.data.toJSON());
       }
