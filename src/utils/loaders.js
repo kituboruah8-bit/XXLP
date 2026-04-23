@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
+import { fileURLToPath, pathToFileURL } from 'url';
 import { logger } from './logger.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -10,8 +10,9 @@ export async function loadCommands(client) {
   const commandFiles = fs.readdirSync(commandsPath).filter(file => file.endsWith('.js'));
 
   for (const file of commandFiles) {
-    const filePath = path.join(commandsPath, file);
-    const command = await import(`file://${filePath}`);
+    const filePath = path.resolve(commandsPath, file);
+    const fileUrl = pathToFileURL(filePath).href;
+    const command = await import(fileUrl);
 
     if (command.default && command.default.data && command.default.execute) {
       client.commands = client.commands || new Map();
@@ -30,8 +31,9 @@ export async function loadEvents(client) {
   const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
 
   for (const file of eventFiles) {
-    const filePath = path.join(eventsPath, file);
-    const event = await import(`file://${filePath}`);
+    const filePath = path.resolve(eventsPath, file);
+    const fileUrl = pathToFileURL(filePath).href;
+    const event = await import(fileUrl);
 
     if (event.default && event.default.name && event.default.execute) {
       if (event.default.once) {
